@@ -37,17 +37,17 @@ def addPayLoadToReport = { subHead, content, additionalData = null ->
 	message.with {
 		append("\n-------------- $subHead --------------\n")
 		if(additionalData) {
-			append("\n${eHM().method}  ${eHM().URL}  ${eHM().protocolVersion}\n\n")
+			append(eHM().requestLine).append('\n')
 			additionalData.each { append(it.name + ' :  ' + it.value + '\n')}
 		}
-		append(content).append('\n')
+		if (context.currentStep.testRequest.contentLength) { append('\n').append(content).append('\n') }
 	}
 }
 
 //Actual business logic
 if (([WsdlTestRequestStep, RestTestRequestStep, HttpTestRequestStep].any{context.currentStep in it}) && (testStepResult.status in [UNKNOWN, OK])) {
 	addPropertiesToReport()
-	addPayLoadToReport('Request', context.request, 	eHM().allHeaders)
+	addPayLoadToReport('Request', context.rawRequest, eHM().allHeaders)
 	addPayLoadToReport('Response', context.rawResponse)	
     testStepResult.addMessage(message.toString())
 }
